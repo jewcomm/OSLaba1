@@ -8,17 +8,45 @@
 #include <string.h>
 
 void archive(char *dir, int outputDescriptor); //функция архивирует директорию dir, записывая результат в открытый файл с дескриптором outputDescriptor
+void unzip(char *fileArch, char *dir); //файл архива и директория, в которую его нужно распаковать
 
 int main(int argc, char* argv[])
 {
-	int outputDescriptor; 
-	if((outputDescriptor = open(argv[2], O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) < 0)
+	int input = 1; //значения по умолчанию для аргументов
+	int output = 2;
+	int k;
+	for(k = 1; k < argc; k++)
 	{
-		printf("error opening file %s\n", argv[2]);
-		return -1;
+		if(strcmp(argv[k], "-o") == 0) //поиск флага "-o"
+		{
+			output = ++k; 
+			continue;
+		}
+		if(strcmp(argv[k], "-i") == 0) //поиск флага "-i"
+		{
+			input = ++k;
+			continue;
+		}
 	}
-	archive(argv[1], outputDescriptor);
-	if(close(outputDescriptor) < 0) printf("error closing file %s\n", argv[2]);
+	
+	struct stat statbuf;
+	lstat(argv[input], &statbuf);
+	if(S_ISDIR(statbuf.st_mode)) //если входные данные - директория, то выполняется архивация
+	{
+		int outputDescriptor; 
+		if((outputDescriptor = open(argv[output], O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) < 0)
+		{
+			printf("error opening file %s\n", argv[output]);
+			return -1;
+		}
+		archive(argv[input], outputDescriptor);
+		if(close(outputDescriptor) < 0) printf("error closing file %s\n", argv[output]);
+	}
+	else //иначе разархивация
+	{
+		unzip(argv[input], argv[output]);
+	}
+	
 	return 0;
 }
 
@@ -75,5 +103,10 @@ void archive(char *dir, int outputDescriptor)
 	if(write(outputDescriptor, ">", 1) != 1) printf("Write error\n");
 	chdir("..");
 	closedir(dirp);
+}
+
+void unzip(char *fileArch, char *dir)
+{
+	
 }
 
