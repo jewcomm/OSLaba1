@@ -8,7 +8,7 @@
 #include <string.h>
 
 void archive(char *dir, int outputDescriptor); //функция архивирует директорию dir, записывая результат в открытый файл с дескриптором outputDescriptor
-void unzip(char *fileArch, char *dir); //файл архива и директория, в которую его нужно распаковать
+char* unzip(char *bufArch); //bufArch - строка, в которую был скопирован файл архива
 
 int main(int argc, char* argv[])
 {
@@ -44,7 +44,27 @@ int main(int argc, char* argv[])
 	}
 	else //иначе разархивация
 	{
-		unzip(argv[input], argv[output]);
+		char *bufArch;
+		if((bufArch = malloc(statbuf.st_size+1)) == NULL)
+		{
+			printf("memory allocation error\n");
+			return -2;
+		}
+		int inputDescriptor; 
+		if((inputDescriptor = open(argv[input], O_RDONLY)) < 0)
+		{
+			printf("error opening file %s\n", argv[input]);
+			return -3;
+		}
+		if(read(inputDescriptor, bufArch, statbuf.st_size)!=statbuf.st_size)
+		{
+			printf("Read error\n");
+			return -4;
+		}
+		bufArch[statbuf.st_size] = '\0';
+		chdir(argv[output]);
+		unzip(bufArch);
+		free(bufArch);
 	}
 	
 	return 0;
@@ -105,7 +125,7 @@ void archive(char *dir, int outputDescriptor)
 	closedir(dirp);
 }
 
-void unzip(char *fileArch, char *dir)
+char* unzip(char *bufArch)
 {
 	
 }
