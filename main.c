@@ -39,7 +39,13 @@ int main(int argc, char* argv[])
 			printf("error opening file %s\n", argv[output]);
 			return -1;
 		}
-		archive(argv[input], outputDescriptor);
+		
+		chdir(argv[input]);
+		chdir("..");
+		char *folderName; //короткое имя каталога, вместо пути в целом
+		if((folderName = strrchr(argv[input], '/')) == NULL) folderName = argv[input];
+		else folderName++; //прибавление к указателю 1, чтобы отбросить символ "/"
+		archive(folderName, outputDescriptor);
 		if(close(outputDescriptor) < 0) printf("error closing file %s\n", argv[output]);
 	}
 	else //иначе разархивация
