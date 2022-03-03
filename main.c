@@ -10,6 +10,8 @@
 void archive(char *dir, int outputDescriptor); //функция архивирует директорию dir, записывая результат в открытый файл с дескриптором outputDescriptor
 char* unzip(char *bufArch); //bufArch - строка, в которую был скопирован файл архива
 
+char* searchEntry(char *str); //ищет в строке первое вхождение символов '|' или '<', если не находит, возвращает NULL
+
 int main(int argc, char* argv[])
 {
 	int input = 1; //значения по умолчанию для аргументов
@@ -62,7 +64,7 @@ int main(int argc, char* argv[])
 			printf("error opening file %s\n", argv[input]);
 			return -3;
 		}
-		if(read(inputDescriptor, bufArch, statbuf.st_size)!=statbuf.st_size)
+		if(read(inputDescriptor, bufArch, statbuf.st_size) != statbuf.st_size)
 		{
 			printf("Read error\n");
 			return -4;
@@ -126,13 +128,59 @@ void archive(char *dir, int outputDescriptor)
 			free(buf);
 		}
 	}
-	if(write(outputDescriptor, ">", 1) != 1) printf("Write error\n");
+	if(write(outputDescriptor, "\0", 1) != 1) printf("Write error\n");
 	chdir("..");
 	closedir(dirp);
 }
 
 char* unzip(char *bufArch)
 {
+	char *strp;
+	if((strp = strchr(bufArch, '<')) == NULL)
+	{
+		printf("error: invalid input file format");
+		exit(-1);
+	}
+	strp[0] = '\0';
+	mkdir(bufArch, S_IWUSR|S_IRUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+	chdir(bufArch);
+	bufArch = strp + 1;
 	
+	while((strp = searchEntry(bufArch)) != NULL)
+	{
+		if(strp[0] == '<') bufArch = unzip(bufArch);
+		else
+		{
+			strp[0] = '\0';
+			int fileDscr;
+			if((fileDscr = open(bufArch, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) < 0)
+			{
+				printf("error opening file %s\n", bufArch);
+				exit(-1);
+			}
+			bufArch = strp + 1;
+			off_t *sizefile = (off_t*)bufArch;
+			bufArch = bufArch + sizeof(off_t);
+			if(write(fileDscr, bufArch, *sizefile) != *sizefile) printf("Write error\n");
+			if(close(fileDscr) < 0) printf("error closing file");
+			bufArch = bufArch + *sizefile;
+		}
+	}
+	
+	chdir("..");
+	return bufArch + 1;
+}
+
+char* searchEntry(char *str)
+{
+	int i;
+	for(i = 0; str[i] != '\0'; i++)
+	{
+		if((str[i] == '|')||(str[i] == '<'))
+		{
+			return str + i;
+		}
+	}
+	return NULL;
 }
 
