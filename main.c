@@ -136,19 +136,15 @@ void archive(char *dir, int outputDescriptor)
 char* unzip(char *bufArch)
 {
 	char *strp;
-	if((strp = strchr(bufArch, '<')) == NULL)
-	{
-		printf("error: invalid input file format");
-		exit(-1);
-	}
-	strp[0] = '\0';
-	mkdir(bufArch, S_IWUSR|S_IRUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
-	chdir(bufArch);
-	bufArch = strp + 1;
-	
 	while((strp = searchEntry(bufArch)) != NULL)
 	{
-		if(strp[0] == '<') bufArch = unzip(bufArch);
+		if(strp[0] == '<')
+		{
+			strp[0] = '\0';
+			mkdir(bufArch, S_IWUSR|S_IRUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+			chdir(bufArch);
+			bufArch = unzip(strp + 1);
+		}
 		else
 		{
 			strp[0] = '\0';
