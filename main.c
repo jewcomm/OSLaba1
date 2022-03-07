@@ -174,20 +174,20 @@ char* unzip(int inputDescriptor, char *buf, char* currp, char *endp)
 					endp = readmore(inputDescriptor, buf, currp, endp);
 					currp = buf;
 				}
-				off_t *filesize = (off_t*)currp;
+				off_t filesize = *(off_t*)currp;
 				currp = currp + sizeof(off_t);
 				
 				/*запись данных в файл*/
-				while(endp-currp < *filesize)
+				while(endp-currp < filesize)
 				{
 					if(write(fileDscr, currp, endp-currp) != endp-currp) printf("Write error\n");
-					*filesize -= endp-currp;
+					filesize -= endp-currp;
 					endp = readmore(inputDescriptor, buf, endp, endp);
 					currp = buf;
 				}
-				if(write(fileDscr, currp, *filesize) != *filesize) printf("Write error\n");
+				if(write(fileDscr, currp, filesize) != filesize) printf("Write error\n");
 				if(close(fileDscr) < 0) printf("error closing file");
-				currp = currp + *filesize;
+				currp = currp + filesize;
 			}
 		}
 	} while((currp[0] != '>') && (buf != endp));
