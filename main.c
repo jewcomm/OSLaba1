@@ -76,6 +76,7 @@ int main(int argc, char* argv[])
 		chdir(argv[output]);
 		unzip(inputDescriptor, buf, buf, buf);
 		free(buf);
+		if(close(inputDescriptor) < 0) printf("error closing file\n");
 	}
 	
 	return 0;
@@ -131,7 +132,7 @@ void archive(char *dir, int outputDescriptor)
 			free(buf);
 		}
 	}
-	if(write(outputDescriptor, "\0", 1) != 1) printf("Write error\n");
+	if(write(outputDescriptor, ">", 1) != 1) printf("Write error\n");
 	chdir("..");
 	closedir(dirp);
 }
@@ -189,7 +190,7 @@ char* unzip(int inputDescriptor, char *buf, char* currp, char *endp)
 				currp = currp + *filesize;
 			}
 		}
-	} while(currp[0] != '\0');
+	} while((currp[0] != '>') && (buf != endp));
 	
 	chdir("..");
 	return currp + 1;
@@ -211,7 +212,7 @@ char* readmore(int inputDescriptor, char *buf, char *currp, char *endp)
 char* searchEntry(char *str)
 {
 	int i;
-	for(i = 0; str[i] != '\0'; i++)
+	for(i = 0; (str[i] != '\0') && (str[i] != '>'); i++)
 	{
 		if((str[i] == '|')||(str[i] == '<'))
 		{
