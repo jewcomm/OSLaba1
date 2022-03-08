@@ -94,7 +94,7 @@ void archive(char *dir, int outputDescriptor)
 		printf("cannot open directory: %s\n", dir);
 		return;
 	}
-	chdir(dir);
+	chdir(dir); // ЗАДАЧА 1 разобраться с необходимостью данного перехода
 	
 	struct dirent *entry; //указатель для доступа к элементу каталога
 	struct stat statbuf;
@@ -107,6 +107,7 @@ void archive(char *dir, int outputDescriptor)
 			if (strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0) continue; //Находит каталог, но игнорирует . и ..
 			archive(entry->d_name, outputDescriptor); //Рекурсивный вызов
 		}
+		// ЗАДАЧА 2 добавить проверку на файл
 		else //иначе запись данных о текущем элементе в выходной файл
 		{
 			int fileDscr;
@@ -119,6 +120,7 @@ void archive(char *dir, int outputDescriptor)
 			if(write(outputDescriptor, "|", 1) != 1) printf("Write error\n");
 			if(write(outputDescriptor, &(statbuf.st_size), sizeof(off_t)) != sizeof(off_t)) printf("Write error\n");
 			char *buf;
+			// ЗАДАЧА 3 реализовать запись через статический буфер по частям
 			if((buf = malloc(statbuf.st_size)) == NULL)
 			{
 				printf("memory allocation error\n");
