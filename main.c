@@ -63,6 +63,11 @@ int main(int argc, char* argv[]) {
 			return -3;
 		}
 
+		if (access(argv[output], 0) != 0) {
+			printf("Folder for unzip not founded\nCreate this folder\n");
+			mkdir(argv[output], 0777);
+		}
+
 		chdir(argv[output]);
 		unzip(inputDescriptor, buf, buf, buf);
 		free(buf);
