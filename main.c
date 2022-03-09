@@ -11,9 +11,9 @@
 #define NAME_MAX_LEN 255
 
 void archive(char *dir, int outputDescriptor); //функция архивирует директорию dir, записывая результат в открытый файл с дескриптором outputDescriptor
-char* unzip(int inputDescriptor, char *buf, char* currp, char *endp); //inputDescriptor - дескриптор файла архива, buf - буфер, currp - текущая позиция в этом буфере
+void unzip(int inputDescriptor, char *buf, char** currp, char** endp);
 
-char* readmore(int inputDescriptor, char *buf, char *currp, char *endp); //прочитает из файла в буфер следующие PART_SIZE байт, при этом оставляя в буфере ещё не обработаные данные
+void readmore(int inputDescriptor, char *buf, char** currp, char** endp); //прочитает из файла в буфер следующие PART_SIZE байт, при этом оставляя в буфере ещё не обработанные данные
 char* searchEntry(char *str); //ищет в строке первое вхождение символов '|' или '<', если не находит, возвращает NULL
 
 int main(int argc, char* argv[])
@@ -74,7 +74,10 @@ int main(int argc, char* argv[])
 		}
 
 		chdir(argv[output]);
-		unzip(inputDescriptor, buf, buf, buf);
+		
+		char *currp = buf;
+		char *endp = buf;
+		unzip(inputDescriptor, buf, &currp, &endp);
 		free(buf);
 		if(close(inputDescriptor) < 0) printf("error closing file\n");
 	}
@@ -137,76 +140,79 @@ void archive(char *dir, int outputDescriptor)
 	closedir(dirp);
 }
 
-char* unzip(int inputDescriptor, char *buf, char* currp, char *endp)
+void unzip(int inputDescriptor, char *buf, char** currp, char** endp)
 {
 	char *strp;
 	do
 	{
-		if((strp = searchEntry(currp)) == NULL)
-		{
-			endp = readmore(inputDescriptor, buf, currp, endp);
-			currp = buf;
-		}
+		if((strp = searchEntry(*currp)) == NULL) readmore(inputDescriptor, buf, currp, endp);
 		else
 		{
 			if(strp[0] == '<')
 			{
 				strp[0] = '\0';
-				mkdir(currp, S_IWUSR|S_IRUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
-				chdir(currp);
-				currp = unzip(inputDescriptor, buf, strp + 1, endp);
+				mkdir(*currp, S_IWUSR|S_IRUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+				chdir(*currp);
+				*currp = strp + 1;
+				unzip(inputDescriptor, buf, currp, endp);
 			}
 			else
 			{
 				/*создание файла*/
 				strp[0] = '\0';
 				int fileDscr;
-				if((fileDscr = open(currp, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) < 0)
+				if((fileDscr = open(*currp, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) < 0)
 				{
-					printf("error opening file %s\n", currp);
+					printf("error opening file %s\n", *currp);
 					exit(-1);
 				}
-				currp = strp + 1;
+				*currp = strp + 1;
 				
 				/*определение размера файла*/
-				if(endp-currp < sizeof(off_t))
-				{
-					endp = readmore(inputDescriptor, buf, currp, endp);
-					currp = buf;
-				}
-				off_t filesize = *(off_t*)currp;
-				currp = currp + sizeof(off_t);
+				if(*endp - *currp < sizeof(off_t)) readmore(inputDescriptor, buf, currp, endp);
+				off_t filesize;
+				filesize = *((off_t*)(*currp));
+				*currp += sizeof(off_t);
 				
 				/*запись данных в файл*/
-				while(endp-currp < filesize)
+				while(*endp - *currp < filesize)
 				{
-					if(write(fileDscr, currp, endp-currp) != endp-currp) printf("Write error\n");
-					filesize -= endp-currp;
-					endp = readmore(inputDescriptor, buf, endp, endp);
-					currp = buf;
+					if(write(fileDscr, *currp, *endp - *currp) != *endp - *currp)
+					{
+						printf("Write error\n");
+						exit(-1);
+					}
+					filesize -= *endp - *currp;
+					*currp = *endp;
+					readmore(inputDescriptor, buf, currp, endp);
 				}
-				if(write(fileDscr, currp, filesize) != filesize) printf("Write error\n");
+				if(write(fileDscr, *currp, filesize) != filesize)
+				{
+					printf("Write error\n");
+					exit(-1);
+				}
 				if(close(fileDscr) < 0) printf("error closing file");
-				currp = currp + filesize;
+				*currp += filesize;
 			}
 		}
-	} while((currp[0] != '>') && (buf != endp));
+	} while((**currp != '>') && (buf != *endp));
 	
+	(*currp)++;
 	chdir("..");
-	return currp + 1;
 }
 
-char* readmore(int inputDescriptor, char *buf, char *currp, char *endp)
+void readmore(int inputDescriptor, char *buf, char** currp, char** endp)
 {
 	long int readcount;
-	memmove(buf, currp, endp-currp); //сохранение в начале буфера необработанного остатка
-	if((readcount = read(inputDescriptor, buf + (endp-currp), PART_SIZE)) < 0) //после него записывается новая прочитанная часть
+	memmove(buf, *currp, *endp - *currp); //сохранение в начале буфера необработанного остатка
+	if((readcount = read(inputDescriptor, buf + (*endp - *currp), PART_SIZE)) < 0) //после него записывается новая прочитанная часть
 	{
 		printf("Read error\n");
 		exit(-1);
 	}
-	buf[endp-currp + readcount] = '\0';
-	return buf + (endp-currp + readcount);
+	buf[*endp - *currp + readcount] = '\0';
+	*endp = buf + (*endp - *currp + readcount);
+	*currp = buf;
 }
 
 char* searchEntry(char *str)
@@ -221,4 +227,3 @@ char* searchEntry(char *str)
 	}
 	return NULL;
 }
-
