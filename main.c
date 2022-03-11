@@ -57,6 +57,8 @@ int main(int argc, char* argv[]) {
 			mkdir(argv[output], 0777);
 		}
 
+		chdir(argv[output]);
+
 		char *currp = buf;
 		char *endp = buf;
 		unzip(inputDescriptor, buf, &currp, &endp);

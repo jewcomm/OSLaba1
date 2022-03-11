@@ -1,6 +1,9 @@
-.PHONY: all clean
+.PHONY: all clean release
 
 all: myzip
+
+release: myzip
+	@rm -rf *.o
 
 clean:
 	@rm -rf myzip *.o
