@@ -6,10 +6,10 @@ void unzip(int inputDescriptor, char *buf, char** currp, char** endp)
 	char *strp;
 	do
 	{
-		if((strp = searchEntry(*currp)) == NULL) readmore(inputDescriptor, buf, currp, endp);
+		if((strp = searchEntry(*currp)) == NULL) readmore(inputDescriptor, buf, currp, endp); //если не нашли специальных символов, то читаем файл дальше
 		else
 		{
-			if(strp[0] == '<')
+			if(strp[0] == '<') //если нашли символ "<", значит перед ним записано имя папки
 			{
 				strp[0] = '\0';
 				mkdir(*currp, S_IWUSR|S_IRUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
@@ -17,7 +17,7 @@ void unzip(int inputDescriptor, char *buf, char** currp, char** endp)
 				*currp = strp + 1;
 				unzip(inputDescriptor, buf, currp, endp);
 			}
-			else
+			else //иначе мы нашли символ "|" и перед ним записано имя файла
 			{
 				/*создание файла*/
 				strp[0] = '\0';
@@ -56,7 +56,7 @@ void unzip(int inputDescriptor, char *buf, char** currp, char** endp)
 				*currp += filesize;
 			}
 		}
-	} while((**currp != '>') && (buf != *endp));
+	} while((**currp != '>') && (buf != *endp)); //пока не встретим символ, означающий конец папки, либо пока буфер не окажется пустым
 	
 	(*currp)++;
 	chdir("..");
