@@ -2,9 +2,6 @@
 #include "archive.h"
 #include "unzip.h"
 
-#define PART_SIZE 4096
-#define NAME_MAX_LEN 255
-
 int main(int argc, char* argv[]) {
 	int input = 1; //значения по умолчанию для аргументов
 	int output = 2;
