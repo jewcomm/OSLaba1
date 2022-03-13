@@ -41,10 +41,10 @@ void archive(char *dir, int outputDescriptor) {
 				if (write(outputDescriptor, &buf, PART_SIZE) != PART_SIZE) printf("Write error %s\n", entry->d_name);
 				filesize -= PART_SIZE;
 			}
-			if (filesize != 0) { // дописываем остаток
-				if (read(fileDscr, &buf, filesize) != filesize) printf("Read error file %s\n", entry->d_name);
-				if (write(outputDescriptor, &buf, filesize) != filesize) printf("Write error %s\n", entry->d_name);
-			}
+			// дописываем остаток
+			if (read(fileDscr, &buf, filesize) != filesize) printf("Read error file %s\n", entry->d_name);
+			if (write(outputDescriptor, &buf, filesize) != filesize) printf("Write error %s\n", entry->d_name);
+			
 			if (close(fileDscr) < 0) printf("error closing file %s\n", entry->d_name);
 		}
 	}
