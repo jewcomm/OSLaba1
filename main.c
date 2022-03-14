@@ -34,33 +34,12 @@ int main(int argc, char* argv[]) {
 		archive(folderName, outputDescriptor);
 		if (close(outputDescriptor) < 0) printf("error closing file %s\n", argv[output]);
 	} else { //иначе разархивация
-		char *buf;
-		/*буфер, в котором отведено NAME_MAX_LEN байт для запоминания необработанного остатка и PART_SIZE байт для чтения архива по частям, а также 1 байт для '\0'*/
-		if ((buf = malloc(NAME_MAX_LEN + PART_SIZE + 1)) == NULL) {
-			printf("memory allocation error\n");
-			return -2;
-		}
-		buf[0] = '\0';
-
-		/*открытие файла архива*/
-		int inputDescriptor;
-		if ((inputDescriptor = open(argv[input], O_RDONLY)) < 0) {
-			printf("error opening file %s\n", argv[input]);
-			return -3;
-		}
-
 		if (access(argv[output], 0) != 0) {
 			printf("Folder for unzip not founded\nCreate this folder\n");
 			mkdir(argv[output], 0777);
 		}
-
 		chdir(argv[output]);
-
-		char *currp = buf; //указатель на текущую позицию в буфере
-		char *endp = buf; //указатель на конец прочитанной части в буфере
-		unzip(inputDescriptor, buf, &currp, &endp);
-		free(buf);
-		if (close(inputDescriptor) < 0) printf("error closing file\n");
+		unzip(argv[input]);
 	}
 
 	return 0;
