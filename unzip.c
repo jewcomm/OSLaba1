@@ -24,6 +24,13 @@ void unzip(char *archfile)
 	char *strp;
 	do
 	{
+		if(*currp == '>') //если встретился символ '>', закрываем папку
+		{
+			currp++;
+			chdir("..");
+			continue;
+		}
+
 		if((strp = searchEntry(currp)) == NULL) readmore(inputDescriptor, buf, &currp, &endp); //если не нашли специальных символов, то читаем файл дальше
 		else
 		{
@@ -74,11 +81,6 @@ void unzip(char *archfile)
 			}
 		}
 		
-		if(*currp == '>')
-		{
-			currp++;
-			chdir("..");
-		}
 	} while(buf != endp); //пока буфер не окажется пустым
 	
 	free(buf);
@@ -111,3 +113,4 @@ char* searchEntry(char *str)
 	}
 	return NULL;
 }
+
