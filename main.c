@@ -3,6 +3,10 @@
 #include "unzip.h"
 
 int main(int argc, char* argv[]) {
+	if(argc == 1) {
+		printf("Uncorrect call programm\n");
+		return 0;
+	}
 	int input = 1; //значения по умолчанию для аргументов
 	int output = 2;
 	int k;
