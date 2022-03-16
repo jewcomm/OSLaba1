@@ -1,4 +1,4 @@
-.PHONY: all clean release testA testU
+.PHONY: all clean release testA testU testC testF
 
 all: myzip
 

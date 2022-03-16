@@ -1,8 +1,13 @@
 #include "main.h"
 #include "unzip.h"
 
-void unzip(char *archfile)
+void unzip(char *archfile, char *outputfile)
 {
+	if (access(outputfile, 0) != 0) {
+		printf("Folder for unzip not founded\nCreate this folder\n");
+		mkdir(outputfile, 0777);
+	}
+	chdir(outputfile);
 	/*открытие файла архива*/
 	int inputDescriptor;
 	if ((inputDescriptor = open(archfile, O_RDONLY)) < 0) {

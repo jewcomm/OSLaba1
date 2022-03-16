@@ -26,12 +26,7 @@ int main(int argc, char* argv[]) {
 	if (S_ISDIR(statbuf.st_mode)) { //если входные данные - директория, то выполняется архивация
 		Archive(argv[input], argv[output]);
 	} else { //иначе разархивация
-		if (access(argv[output], 0) != 0) {
-			printf("Folder for unzip not founded\nCreate this folder\n");
-			mkdir(argv[output], 0777);
-		}
-		chdir(argv[output]);
-		unzip(argv[input]);
+		unzip(argv[input], argv[output]);
 	}
 
 	return 0;
