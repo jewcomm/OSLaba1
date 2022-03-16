@@ -24,19 +24,7 @@ int main(int argc, char* argv[]) {
 	struct stat statbuf;
 	lstat(argv[input], &statbuf);
 	if (S_ISDIR(statbuf.st_mode)) { //если входные данные - директория, то выполняется архивация
-		int outputDescriptor;
-		if ((outputDescriptor = open(argv[output], O_WRONLY | O_CREAT | O_TRUNC, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH)) == (int) - 1) {
-			printf("error opening file %s\n", argv[output]);
-			return -1;
-		}
-
-		chdir(argv[input]);
-		chdir("..");
-		char *folderName; //короткое имя каталога, вместо пути в целом
-		if ((folderName = strrchr(argv[input], '/')) == NULL) folderName = argv[input];
-		else folderName++; //прибавление к указателю 1, чтобы отбросить символ "/"
-		archive(folderName, outputDescriptor);
-		if (close(outputDescriptor) < 0) printf("error closing file %s\n", argv[output]);
+		Archive(argv[input], argv[output]);
 	} else { //иначе разархивация
 		if (access(argv[output], 0) != 0) {
 			printf("Folder for unzip not founded\nCreate this folder\n");

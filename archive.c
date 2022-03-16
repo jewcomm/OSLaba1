@@ -1,7 +1,24 @@
 #include "main.h"
 #include "archive.h"
 
-void archive(char *dir, int outputDescriptor) {
+void Archive(char *input, char * output) {
+	int outputDescriptor;
+	if ((outputDescriptor = open(output, O_WRONLY | O_CREAT | O_TRUNC, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH)) == (int) - 1) {
+		printf("error opening file %s\n", output);
+		return ;
+	}
+
+	chdir(input);
+	chdir("..");
+	char *folderName; //короткое имя каталога, вместо пути в целом
+	if ((folderName = strrchr(input, '/')) == NULL) folderName = input;
+	else folderName++; //прибавление к указателю 1, чтобы отбросить символ "/"
+	WriteArchive(folderName, outputDescriptor);
+	if (close(outputDescriptor) < 0) printf("error closing file %s\n", output);
+	return;
+}
+
+void WriteArchive(char *dir, int outputDescriptor) {
 	if (write(outputDescriptor, dir, strlen(dir)) != strlen(dir)) printf("Write error\n");
 	if (write(outputDescriptor, "<", 1) != 1) printf("Write error\n");
 
@@ -18,12 +35,12 @@ void archive(char *dir, int outputDescriptor) {
 	//Цикл по элементам каталога
 	while ((entry = readdir(dirp)) != NULL) {
 		lstat(entry->d_name, &statbuf);
-		
+
 		if (S_ISDIR(statbuf.st_mode)) { //если текущий элемент - каталог, то рекурсивный вызов
 			if (strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0) continue; //игнорирует . и ..
-			archive(entry->d_name, outputDescriptor); //рекурсивный вызов
+			WriteArchive(entry->d_name, outputDescriptor); //рекурсивный вызов
 		}
-		
+
 		if (S_ISREG(statbuf.st_mode)) { //если текущий элемент - файл
 			int fileDscr;
 			if ((fileDscr = open(entry->d_name, O_RDONLY)) < 0) {
@@ -44,7 +61,7 @@ void archive(char *dir, int outputDescriptor) {
 			// дописываем остаток
 			if (read(fileDscr, &buf, filesize) != filesize) printf("Read error file %s\n", entry->d_name);
 			if (write(outputDescriptor, &buf, filesize) != filesize) printf("Write error %s\n", entry->d_name);
-			
+
 			if (close(fileDscr) < 0) printf("error closing file %s\n", entry->d_name);
 		}
 	}

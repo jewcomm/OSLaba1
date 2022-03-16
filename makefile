@@ -1,4 +1,4 @@
-.PHONY: all clean release
+.PHONY: all clean release testA testU
 
 all: myzip
 
@@ -19,3 +19,25 @@ archive.o: archive.c archive.h main.h
 
 unzip.o: unzip.c unzip.h main.h
 	@gcc -c unzip.c -fsanitize=address
+
+
+testA: myzip 
+	@echo "Run programm(archive mode) with parameters:"
+	@echo "-i /home/alex/Study/example -o /home/alex/Study/arch"
+	@echo "Result programm:"
+	@./myzip -i /home/alex/Study/example -o /home/alex/Study/arch
+	@echo ""
+
+testU: myzip
+	@echo "Run programm(unzip mode) with parameters:"
+	@echo "-i /home/alex/Study/arch -o /home/alex/Study/result"
+	@echo "Result programm:"
+	@./myzip -i /home/alex/Study/arch -o /home/alex/Study/result
+	@echo ""
+
+testC:
+	@echo "Clear archive and result file"
+	@rm -rf /home/alex/Study/arch /home/alex/Study/result
+	@echo ""
+
+testF: testC testA testU
