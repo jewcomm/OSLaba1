@@ -7,56 +7,43 @@ int main(int argc, char* argv[]) {
 		printf("Uncorrect call programm\n");
 		return 0;
 	}
-	/*
-	int input = 1; //значения по умолчанию для аргументов
-	int output = 2;
-	int k;
-	for (k = 1; k < argc; k++) {
-		if (strcmp(argv[k], "-o") == 0) { //поиск флага "-o"
-			output = ++k;
-			continue;
-		}
-		if (strcmp(argv[k], "-i") == 0) { //поиск флага "-i"
-			input = ++k;
-			continue;
-		}
-	}
-
-	struct stat statbuf;
-	lstat(argv[input], &statbuf);
-	if (S_ISDIR(statbuf.st_mode)) { //если входные данные - директория, то выполняется архивация
-		Archive(argv[input], argv[output]);
-	} else { //иначе разархивация
-		unzip(argv[input], argv[output]);
-	}
-	*/
-	int mode = 0; // 0 - unknown 1 - archive 2 - unzip 3 - error parameters
+	int mode = UNKNOWN;
 	int input = 0;
 	int output = 0;
 
 	for (int i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-a") == 0) {
+		if (!(strcmp(argv[i], "-a"))) {
 			input = ++i;
-			mode = mode ? 3 : 1;
+			mode = mode ? ERROR : ARCH;
 			continue;
 		}
-		if (strcmp(argv[i], "-u") == 0) {
+		if (!(strcmp(argv[i], "-u"))) {
 			input = ++i;
-			mode = mode ? 3 : 2;
+			mode = mode ? ERROR : UNZIP;
 			continue;
 		}
-		if (strcmp(argv[i], "-o") == 0) {
+		if (!(strcmp(argv[i], "-o"))) {
 			output = ++i;
 			continue;
 		}
 
 	}
 
-	if(!(input && output)) mode = 3;
+	if (!(input && output)) mode = UNKNOWN;
 
-	if(mode == 1) Archive(argv[input], argv[output]);
-	if(mode == 2) unzip(argv[input], argv[output]);
+	switch (mode) {
+	case UNKNOWN:
+		printf("Unknown arguments\n");
+		break;
+	case ARCH:
+		Archive(argv[input], argv[output]);
+		break;
+	case UNZIP:
+		unzip(argv[input], argv[output]);
+		break;
+	case ERROR:
+		printf("Wrong arguments\n");
+	}
 
-	printf("%i\n", mode);
 	return 0;
 }

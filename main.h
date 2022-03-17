@@ -19,3 +19,10 @@
 #ifndef NAME_MAX_LEN
 #define NAME_MAX_LEN 255
 #endif
+
+#ifndef MODE
+#define UNKNOWN 0
+#define ARCH 1
+#define UNZIP 2
+#define ERROR 3
+#endif
