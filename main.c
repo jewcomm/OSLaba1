@@ -5,6 +5,7 @@
 int main(int argc, char* argv[]) {
 	if (argc == 1) {
 		printf("Uncorrect call programm\n");
+		PrintHelp();
 		return 0;
 	}
 	int mode = UNKNOWN;
@@ -12,38 +13,47 @@ int main(int argc, char* argv[]) {
 	int output = 0;
 
 	for (int i = 1; i < argc; i++) {
-		if (!(strcmp(argv[i], "-a"))) {
+		if (!(strcmp(argv[i], "-a"))) { // если нужно архивировать
 			input = ++i;
 			mode = mode ? ERROR : ARCH;
 			continue;
 		}
-		if (!(strcmp(argv[i], "-u"))) {
+		if (!(strcmp(argv[i], "-u"))) { // если нужно разархивировать
 			input = ++i;
 			mode = mode ? ERROR : UNZIP;
 			continue;
 		}
-		if (!(strcmp(argv[i], "-o"))) {
+		if (!(strcmp(argv[i], "-o"))) { // выходной файл
 			output = ++i;
 			continue;
 		}
 
 	}
 
-	if (!(input && output)) mode = UNKNOWN;
+	if (!(input && output)) mode = UNKNOWN; // если хотя бы аргумент не нашли
 
 	switch (mode) {
 	case UNKNOWN:
 		printf("Unknown arguments\n");
+		PrintHelp();
 		break;
 	case ARCH:
-		Archive(argv[input], argv[output]);
+		if(Archive(argv[input], argv[output])) printf("Error file archiving\n");
 		break;
 	case UNZIP:
 		unzip(argv[input], argv[output]);
 		break;
 	case ERROR:
 		printf("Wrong arguments\n");
+		PrintHelp();
+		break;
 	}
 
 	return 0;
+}
+
+void PrintHelp(void){
+	printf("For run programm use next arguments:\n"
+		    "For archive folder -a 'folder path' -o 'path to archive file'\n" 
+			"For unzip archive -u 'path to archive file' -o 'path to result folder'\n");
 }

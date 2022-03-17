@@ -26,3 +26,5 @@
 #define UNZIP 2
 #define ERROR 3
 #endif
+
+void PrintHelp(void); 
