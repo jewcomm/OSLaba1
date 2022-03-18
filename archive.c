@@ -55,7 +55,7 @@ int WriteArchive(char *dir, int outputDescriptor) {
 				continue;
 			}
 			if (write(outputDescriptor, entry->d_name, strlen(entry->d_name)) != strlen(entry->d_name)) { printf("Write error\n"); return ErrorHandler(fileDscr);}
-			if (write(outputDescriptor, "|", 1) != 1) { printf("Write error\n"); return 1;}
+			if (write(outputDescriptor, "|", 1) != 1) { printf("Write error\n"); return ErrorHandler(fileDscr);}
 			if (write(outputDescriptor, &(statbuf.st_size), sizeof(off_t)) != sizeof(off_t)) { printf("Write error\n"); return ErrorHandler(fileDscr);}
 
 			char buf[PART_SIZE];
@@ -66,8 +66,8 @@ int WriteArchive(char *dir, int outputDescriptor) {
 				filesize -= PART_SIZE;
 			}
 			// дописываем остаток
-			if (read(fileDscr, &buf, filesize) != filesize) { printf("Read error file %s\n", entry->d_name); ErrorHandler(fileDscr); }
-			if (write(outputDescriptor, &buf, filesize) != filesize) { printf("Write error %s\n", entry->d_name); ErrorHandler(fileDscr); }
+			if (read(fileDscr, &buf, filesize) != filesize) { printf("Read error file %s\n", entry->d_name); return ErrorHandler(fileDscr); }
+			if (write(outputDescriptor, &buf, filesize) != filesize) { printf("Write error %s\n", entry->d_name); return ErrorHandler(fileDscr); }
 
 			if (close(fileDscr)) printf("Error closing file %s\n", entry->d_name);
 		}
