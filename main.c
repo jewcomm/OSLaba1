@@ -3,11 +3,6 @@
 #include "unzip.h"
 
 int main(int argc, char* argv[]) {
-	if (argc == 1) {
-		printf("Uncorrect call programm\n");
-		PrintHelp();
-		return 0;
-	}
 	int mode = UNKNOWN;
 	int input = 0;
 	int output = 0;
