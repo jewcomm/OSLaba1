@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 		if(Archive(argv[input], argv[output])) printf("Error file archiving\n");
 		break;
 	case UNZIP:
-		unzip(argv[input], argv[output]);
+		if(unzip(argv[input], argv[output])) printf("Unzip error\n");
 		break;
 	case ERROR:
 		printf("Wrong arguments\n");
