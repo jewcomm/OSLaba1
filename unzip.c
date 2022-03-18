@@ -117,6 +117,7 @@ int unzip(char *archfile, char *outputdir)
 	
 	free(buf);
 	if(close(inputDescriptor) < 0) printf("error closing file %s\n", archfile);
+	return 0;
 }
 
 int readmore(int inputDescriptor, char *buf, char** currp, char** endp)
