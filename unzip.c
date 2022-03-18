@@ -82,7 +82,16 @@ int unzip(char *archfile, char *outputdir)
 				currp = strp + 1;
 				
 				/*определение размера файла*/
-				if(endp - currp < sizeof(off_t)) readmore(inputDescriptor, buf, &currp, &endp);
+				if(endp - currp < sizeof(off_t))
+				{
+					if(readmore(inputDescriptor, buf, &currp, &endp))
+					{
+						printf("archive structure error\n");
+						if(close(fileDscr) < 0) printf("error closing file\n");
+						if(close(inputDescriptor) < 0) printf("error closing file %s\n", archfile);
+						return 1;
+					}	
+				}
 				off_t filesize;
 				filesize = *((off_t*)currp);
 				currp += sizeof(off_t);
@@ -99,7 +108,13 @@ int unzip(char *archfile, char *outputdir)
 					}
 					filesize -= endp - currp;
 					currp = endp;
-					readmore(inputDescriptor, buf, &currp, &endp);
+					if(readmore(inputDescriptor, buf, &currp, &endp))
+					{
+						printf("archive structure error\n");
+						if(close(fileDscr) < 0) printf("error closing file\n");
+						if(close(inputDescriptor) < 0) printf("error closing file %s\n", archfile);
+						return 1;
+					}
 				}
 				if(write(fileDscr, currp, filesize) != filesize)
 				{
@@ -132,6 +147,7 @@ int readmore(int inputDescriptor, char *buf, char** currp, char** endp)
 		printf("Read error\n");
 		exit(-1);
 	}
+	if((readcount == 0) && (rest != 0)) return 1;
 	buf[rest + readcount] = '\0';
 	*endp = buf + (rest + readcount);
 	*currp = buf;
