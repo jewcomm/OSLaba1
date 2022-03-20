@@ -1,7 +1,7 @@
 #include "main.h"
 #include "archive.h"
 
-int Archive(char *input, char * output) {
+int Archive(char *input, char *output) {
 	int outputDescriptor;
 	if ((outputDescriptor = open(output, O_WRONLY | O_CREAT | O_TRUNC, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH)) == -1) {
 		printf("Error opening file %s\n", output);

@@ -27,4 +27,4 @@
 #define ERROR 3
 #endif
 
-void PrintHelp(void); 
+void PrintHelp(void);

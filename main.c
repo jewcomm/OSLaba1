@@ -2,7 +2,7 @@
 #include "archive.h"
 #include "unzip.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 	int mode = UNKNOWN;
 	int input = 0;
 	int output = 0;
@@ -33,10 +33,10 @@ int main(int argc, char* argv[]) {
 		PrintHelp();
 		break;
 	case ARCH:
-		if(Archive(argv[input], argv[output])) printf("Error file archiving\n");
+		if (Archive(argv[input], argv[output])) printf("Error file archiving\n");
 		break;
 	case UNZIP:
-		if(unzip(argv[input], argv[output])) printf("Unzip error\n");
+		if (unzip(argv[input], argv[output])) printf("Unzip error\n");
 		break;
 	case ERROR:
 		printf("Wrong arguments\n");
@@ -47,8 +47,8 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
-void PrintHelp(void){
+void PrintHelp(void) {
 	printf("For run programm use next arguments:\n"
-		    "For archive folder -a 'folder path' -o 'path to archive file'\n" 
-			"For unzip archive -u 'path to archive file' -o 'path to result folder'\n");
+	       "For archive folder -a 'folder path' -o 'path to archive file'\n"
+	       "For unzip archive -u 'path to archive file' -o 'path to result folder'\n");
 }
